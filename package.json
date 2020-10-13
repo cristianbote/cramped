@@ -8,7 +8,7 @@
   "source": "src/index.js",
   "license": "MIT",
   "scripts": {
-    "ci": "microbundle --entry src/index.js --name cramped --output build",
+    "ci": "microbundle --entry src/index.js --name cramped --output dist",
     "develop": "yarn ci watch",
     "build": "yarn ci build"
   },
