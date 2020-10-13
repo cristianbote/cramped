@@ -1,0 +1,24 @@
+{
+  "name": "cramped",
+  "version": "0.0.0-pre.1",
+  "main": "src/index.js",
+  "license": "MIT",
+  "scripts": {
+    "ci": "microbundle --entry src/index.js --name cramped --output build",
+    "develop": "yarn ci watch",
+    "build": "yarn ci build"
+  },
+  "files": [
+    "build",
+    "src",
+    "package.json",
+    "README.md"
+  ],
+  "dependencies": {
+    "goober": "^2.0.8",
+    "preact": "^10.5.4"
+  },
+  "devDependencies": {
+    "microbundle": "^0.12.4"
+  }
+}
