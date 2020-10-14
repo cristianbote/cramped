@@ -1,5 +1,5 @@
 import { concat } from '../api/concat';
-import { useState, useRef, useEffect } from 'preact/hooks';
+import { createElement, useState, useRef, useEffect } from 'react';
 
 const Picker = ({ style, children, items, onValueChange, ...props }) => {
     const [showItems, setShowItems] = useState(false);

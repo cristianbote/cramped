@@ -1,4 +1,4 @@
-import { h, cloneElement } from 'preact';
+import { createElement, cloneElement, Fragment } from 'react';
 import { Modal } from './modal/modal';
 import { Picker } from './picker/picker';
 import { ActivityIndicator } from './activity-indicator/activity-indicator';

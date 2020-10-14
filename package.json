@@ -8,7 +8,7 @@
   "source": "src/index.js",
   "license": "MIT",
   "scripts": {
-    "ci": "microbundle --entry src/index.js --name cramped --output dist",
+    "ci": "microbundle --entry src/index.js --name cramped --output dist --jsx createElement",
     "develop": "yarn ci watch",
     "build": "yarn ci build"
   },
@@ -18,11 +18,12 @@
     "package.json",
     "README.md"
   ],
-  "dependencies": {
+  "peerDependencies": {
     "goober": "^2.0.8",
-    "preact": "^10.5.4"
+    "react": "^16.13.1"
   },
   "devDependencies": {
+    "goober": "^2.0.8",
     "microbundle": "^0.12.4"
   }
 }
