@@ -8,15 +8,17 @@ import { handleProps } from './api/handle-props';
 import { View } from './core/view';
 
 const PixelRatio = {
-    getPixelSizeForLayoutSize: val => `${val / 8}rem`,
-    roundToNearestPixel: val => {
+    // According to web sources 1dp = 1.33px at 100%, and o transform it to em we consider 16px to be the base.
+    // Also we multiply with the PixelRatio
+    getPixelSizeForLayoutSize: (val) => `${Math.round((val * PixelRatio.get()) / 1.33)}px`,
+    roundToNearestPixel: (val) => {
         if (typeof val === 'string') {
             return val;
         }
 
         return `${val}px`;
     },
-    get: () => 2
+    get: () => 1.33
 };
 
 const Dimensions = {
@@ -32,11 +34,11 @@ const Dimensions = {
     }
 };
 
-const flattenObject = value => {
+const flattenObject = (value) => {
     const keys = Object.keys(value);
 
     return keys
-        .map(key => {
+        .map((key) => {
             return `${key}(${value[key]})`;
         })
         .join(' ');
@@ -44,7 +46,7 @@ const flattenObject = value => {
 
 const stlyeTransformers = [
     // transforms and list
-    entry => {
+    (entry) => {
         for (let prop in entry) {
             const val = entry[prop];
 
@@ -59,7 +61,7 @@ const stlyeTransformers = [
     },
 
     // shadow to boxShadow
-    entry => {
+    (entry) => {
         let collected = null;
         for (let prop in entry) {
             if (/^(shadow|elevation)/.test(prop)) {
@@ -77,16 +79,18 @@ const stlyeTransformers = [
 
             const shadowOffset = collected.shadowOffset || {};
 
-            const height = (shadowOffset.height || 0) + (/em$/.test(shadowOffset.height) ? '' : 'px');
+            const height =
+                (shadowOffset.height || 0) + (/em$/.test(shadowOffset.height) ? '' : 'px');
             const width = (shadowOffset.width || 0) + (/em$/.test(shadowOffset.width) ? '' : 'px');
-            const radius = (collected.shadowRadius || 0) + (/em$/.test(collected.shadowRadius) ? '' : 'px');
+            const radius =
+                (collected.shadowRadius || 0) + (/em$/.test(collected.shadowRadius) ? '' : 'px');
 
             entry.boxShadow = `${width} ${height} ${radius} ${collected.shadowColor}`;
         }
     },
 
     // horizontal and vertical
-    entry => {
+    (entry) => {
         const horizontalRule = /horizontal/i;
         const verticalRule = /vertical/i;
 
@@ -106,7 +110,7 @@ const stlyeTransformers = [
     },
 
     // Border for web
-    entry => {
+    (entry) => {
         if ('borderWidth' in entry && !('borderStyle' in entry)) {
             entry.borderStyle = 'solid';
         }
@@ -123,7 +127,7 @@ const stlyeTransformers = [
     },
 
     // Start/end
-    entry => {
+    (entry) => {
         const rule = /(end|start)/i;
         for (let prop in entry) {
             const res = rule.exec(prop);
@@ -135,7 +139,7 @@ const stlyeTransformers = [
     },
 
     // Auto define display: flex;
-    entry => {
+    (entry) => {
         const rule = /^(fl|al|ju)/i;
         const hasDisplaySetToFlex = entry.display && entry.display === 'flex';
 
@@ -151,6 +155,16 @@ const stlyeTransformers = [
                 Object.assign(entry, {
                     display: 'flex'
                 });
+            }
+        }
+    },
+
+    // Add `em` value for numeric props
+    (entry) => {
+        const IS_NON_DIMENSIONAL = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i;
+        for (let prop in entry) {
+            if (typeof entry[prop] == 'number' && !IS_NON_DIMENSIONAL.test(prop)) {
+                entry[prop] = PixelRatio.getPixelSizeForLayoutSize(entry[prop]);
             }
         }
     }
@@ -177,7 +191,7 @@ const StyleSheet = {
             const entry = entries[name];
 
             // Gotta have transformers
-            stlyeTransformers.forEach(fn => fn(entry));
+            stlyeTransformers.forEach((fn) => fn(entry));
 
             map[name] = entry;
         }
@@ -196,7 +210,7 @@ const StyleSheet = {
 
 const Platform = {
     OS: 'web',
-    select: val => (val && 'web' in val ? val.web : val.default)
+    select: (val) => (val && 'web' in val ? val.web : val.default)
 };
 const Primitive = ({ tag: Tag = 'span', ...props }) => {
     const spread = handleProps(props);
@@ -207,7 +221,7 @@ const TextInput = ({ style, onChangeText, onSubmitEditing, ...props }) => {
     const handlers = {};
 
     if (onSubmitEditing) {
-        handlers.onKeyDown = e => {
+        handlers.onKeyDown = (e) => {
             if (e.keyCode === 13) {
                 onSubmitEditing();
             }
@@ -270,7 +284,12 @@ const styles = StyleSheet.create({
 const ScrollView = ({ style, contentContainerStyle, horizontal, children }) => {
     return (
         <View style={[styles.scrollView, style, horizontal && styles.scrollViewHorizontal]}>
-            <View style={[horizontal ? styles.containerHorizontal : styles.container, contentContainerStyle]}>
+            <View
+                style={[
+                    horizontal ? styles.containerHorizontal : styles.container,
+                    contentContainerStyle
+                ]}
+            >
                 {children}
             </View>
         </View>
@@ -288,15 +307,13 @@ const chunk = (data, len) => {
     );
 };
 
-const renderReferenceOrFunction = Value => {
+const renderReferenceOrFunction = (Value) => {
     if (typeof Value === 'function') {
         return <Value />;
     }
 
     return Value;
 };
-
-const RNPickerSelect = Primitive;
 
 const FlatList = ({
     ListHeaderComponent,
@@ -354,7 +371,7 @@ const SectionList = ({
 }) => {
     return (
         <ScrollView {...props}>
-            {sections.map(section => {
+            {sections.map((section) => {
                 return (
                     <>
                         {renderSectionHeader && renderSectionHeader({ section: section })}
@@ -375,7 +392,7 @@ const SectionList = ({
     );
 };
 
-const Image = props => {
+const Image = (props) => {
     if (props.webp) {
         return (
             <picture>
@@ -405,20 +422,20 @@ const TouchableNativeFeedback = Button;
 const TouchableHighlight = Button;
 const SafeAreaView = View;
 const Alert = {
-    alert: msg => alert(msg)
+    alert: (msg) => alert(msg)
 };
 
 const I18nManager = {
     isRTL: false,
-    forceRTL: val => {
+    forceRTL: (val) => {
         I18nManager.isRTL = val;
     }
 };
 
 const Switch = Primitive;
 const Animated = {
-    event: function() {},
-    parallel: function(entries) {
+    event: function () {},
+    parallel: function (entries) {
         const maxDuration = entries.reduce((out, item) => {
             return Math.max(out, item.config.duration);
         }, 0);
@@ -429,11 +446,11 @@ const Animated = {
             }
         };
     },
-    timing: function(ref, config) {
+    timing: function (ref, config) {
         return { ref, config };
     },
     Value: function Value(val) {
-        this.interpolate = function() {
+        this.interpolate = function () {
             return val;
         };
     },
@@ -452,7 +469,12 @@ const LayoutAnimation = {
 
 const Easing = {};
 
+const AppRegistry = {
+    registerComponent: (name, renderFn) => {}
+};
+
 export {
+    AppRegistry,
     Alert,
     ActivityIndicator,
     Modal,

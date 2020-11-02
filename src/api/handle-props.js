@@ -1,7 +1,7 @@
-import { css } from "goober";
-import { concat } from "./concat";
+import { css } from 'goober';
+import { concat } from './concat';
 
-export const handleProps = props => {
+export const handleProps = (props) => {
     const spread = {};
 
     // TODO(cristianbote): Maybe figure out a smarter way?
@@ -28,6 +28,7 @@ export const handleProps = props => {
             overflow: 'hidden'
         });
         spread.className = `${spread.className || ''} ${flexClassName}`.trim();
+
         delete props.flex;
     }
     return Object.assign({}, props || {}, spread);
